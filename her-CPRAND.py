@@ -7,15 +7,19 @@ def err(tensor,weight,factors):
   t_tilde=tl.kruskal_to_tensor((weight,factors)) # transform tensor decomposition (kruskal tensor) to tensor
   return(tl.norm(tensor-t_tilde))
   
-  # ALS method to compute tensor decomposition
+# ALS method to compute tensor decomposition
 def als(tensor,rank,it_max=100,tol=1e-5):
-  N=tl.ndim(tensor) # dimension of tensor
+  N=tl.ndim(tensor) # order of tensor
   norm_tensor=tl.norm(tensor) # norm of tensor
-  factors=[] # factor matrices
+  factors=[] # list of factor matrices
   # Initializtion of factor matrices by left singular vectors
   for mode in range(N):
     unfolded=tl.unfold(tensor, mode)
-    u,s,v=tl.partial_svd(unfolded,n_eigenvecs=rank) # first rank eigenvectors/values (ascendent)
+    if rank<=tl.shape(tensor)[mode] : 
+      u,s,v=tl.partial_svd(unfolded,n_eigenvecs=rank) # first rank eigenvectors/values (ascendent)
+    else : 
+      u,s,v=tl.partial_svd(unfolded,n_eigenvecs=N) 
+      u=np.append(u,np.random.random((np.shape(u)[0],rank-N)),axis=1)  # singular matrix ? 
     factors+=[u]
   weights,factors=tl.kruskal_tensor.kruskal_normalise((None,factors)) # normalise factor matrices
   it=0
